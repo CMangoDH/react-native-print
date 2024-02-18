@@ -67,6 +67,7 @@ public class RNPrintModule extends ReactContextBaseJavaModule {
         final boolean isLandscape = options.hasKey("isLandscape") ? options.getBoolean("isLandscape") : false;
         final String jobName = options.hasKey("jobName") ? options.getString("jobName") : defaultJobName;
         final String baseUrl = options.hasKey("baseUrl") ? options.getString("baseUrl") : null;
+        final String paperSize = options.hasKey("paperSize") ? options.getString("paperSize") : null;
 
         if ((html == null && filePath == null) || (html != null && filePath != null)) {
             promise.reject(getName(), "Must provide either `html` or `filePath`.  Both are either missing or passed together");
@@ -200,6 +201,23 @@ public class RNPrintModule extends ReactContextBaseJavaModule {
                         promise.resolve(jobName);
                     }
                 };
+
+                PrintAttributes.MediaSize mediaSize;
+                if (paperSize != null) {
+                    switch(paperSize) {
+                        case "A5": mediaSize = PrintAttributes.MediaSize.ISO_A5;break;
+                        default: mediaSize = isLandscape?PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE:
+                            PrintAttributes.MediaSize.UNKNOWN_PORTRAIT;
+                    }
+                }
+                else {
+                    mediaSize = isLandscape?PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE:
+                        PrintAttributes.MediaSize.UNKNOWN_PORTRAIT;
+                }
+                PrintAttributes printAttributes = new PrintAttributes.Builder()
+                    .setMediaSize(mediaSize)
+                    .build();
+                printManager.print(jobName, adapter, printAttributes);
 
                 PrintAttributes printAttributes = new PrintAttributes.Builder()
                         .setMediaSize(isLandscape?PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE:PrintAttributes.MediaSize.UNKNOWN_PORTRAIT)
